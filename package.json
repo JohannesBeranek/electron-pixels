@@ -1,0 +1,19 @@
+{
+	"name": "pixels",
+	"version": "0.0.1",
+	"description": "Pixels the game",
+	"main": "main.js",
+	"scripts": {
+		"start": "electron ."
+	},
+	"repository": "https://github.com/JohannesBeranek/electron-pixels",
+	"keywords": [
+		"Pixels"
+	],
+	"author": "GitHub",
+	"license": "ISC",
+	"devDependencies": {
+		"electron": ">=1.6.2",
+		"eslint" : "eslint/eslint"
+	}
+}

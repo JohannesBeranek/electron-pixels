@@ -1,0 +1,35 @@
+{
+	"parser": "esprima",
+	"parserOptions": {
+		"ecmaVersion": 8,
+		"sourceType": "module",
+		"ecmaFeatures": {
+			"jsx": true,
+			"impliedStrict": true,
+			"experimentalObjectRestSpread": true
+		}
+	},
+	"env": {
+		"node": true
+	},
+	"root": true,
+	"rules": {
+		"global-require": 0,
+		"func-names": ["error", "always"],
+		"new-cap": ["error", { "newIsCap": true }],
+		"quote-props": 0,
+		"default-case": 0,
+		"no-param-reassign": ["error", { "props": false }],
+		"arrow-body-style": 0,
+		"consistent-return": "error",
+		"no-loop-func": "error",
+		"camelcase": ["error", { "properties": "always" }],
+		"no-else-return": "error",
+		"no-confusing-arrow": 0,
+		"no-unused-expressions": ["error", { "allowShortCircuit": true, "allowTernary": true }],
+		"prefer-template": 0,
+		"no-underscore-dangle": 0,
+		"no-trailing-spaces": "error",
+		"quotes": ["error", "single"]
+	}
+}
