@@ -14,8 +14,8 @@
 	"author": "GitHub",
 	"license": "ISC",
 	"devDependencies": {
-		"electron": ">=1.6.2",
-		"electron-rebuild": ">=1.5.7",
+		"electron": "1.6.2",
+		"electron-rebuild": "1.5.7",
 		"eslint": "eslint/eslint",
 		"esprima": "jquery/esprima",
 		"node-opencl": "mikeseven/node-opencl"
