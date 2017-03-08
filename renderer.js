@@ -1,26 +1,28 @@
 const fs = require('fs');
-
 const electron = require('electron');
+const cl = require('node-opencl');
 
-let canvas;
-let gl;
-let program;
 
-let locPosition;
-let locTexCoord;
-let locSampler;
+let canvas;  // canvas dom element
+let gl;      // opengl context
+let clCtx;   // opencl context
+let program; // opengl shader program
 
-let vertexCoordBuffer;
+let locPosition;  // location of position variable in frag shader
+let locTexCoord;  // location of texture coords variable in frag shader
+let locSampler;   // location of sampler in frag shader
 
-let texCoordBuffer;
-let texture;
+let vertexCoordBuffer;   // buffer for vertext coordinates
 
-let imageData;
+let texCoordBuffer;      // buffer for texture coordinate
+let texture;             // texture
+
+let imageData;           // uint8array for texture data
 
 let textureWidth = 640;
 let textureHeight = 480;
 
-const bytesPerPixel = 4;
+const bytesPerPixel = 4; // bytes per pixel in imageData: R,G,B,A
 
 function init() {
 	canvas = document.getElementById('glscreen');
@@ -86,17 +88,66 @@ function init() {
 
 	imageData = new Uint8Array(textureWidth * textureHeight * bytesPerPixel);
 
+	// init texture to be all solid
 	for (let i = 0; i < textureWidth * textureHeight; i++) {
-		imageData[i*bytesPerPixel + 0] = 255;
+		const offset = i * bytesPerPixel;
+		imageData[offset + 3] = 255;
 	}
 
 	texture = gl.createTexture();
 
-
 	locSampler = gl.getUniformLocation(program, 'u_sampler');
 
+	// --- Init opencl
+	const platforms = cl.getPlatformIDs();
+	for(let i = 0; i < platforms.length; i++)
+		console.info(`Platform ${i}: ${cl.getPlatformInfo(platforms[i], cl.PLATFORM_NAME)}`);
+
+	const platform = platforms[0];
+
+	const devices = cl.getDeviceIDs(platform, cl.DEVICE_TYPE_ALL);
+	for(let i = 0; i < devices.length; i++)
+		console.info(`  Devices ${i}: ${cl.getDeviceInfo(devices[i], cl.DEVICE_NAME)}`);
+
+	console.info('creating context');
+
+	clCtx = cl.createContext([cl.CONTEXT_PLATFORM, platform], devices);
+
+	startGameLoop();
 	render();
 }
+
+
+// ----------- GAME LOOP
+
+let lastLoopTime;
+const timePerTick = 1000; // ms
+let timeSinceLastLoop = 0;
+
+function startGameLoop() {
+	lastLoopTime = Date.now();
+	gameLoop();
+}
+
+function gameLoop() {
+	const now = Date.now();
+	timeSinceLastLoop += now - lastLoopTime;
+	lastLoopTime = now;
+
+	while(timeSinceLastLoop > timePerTick) {
+		gameTick();
+		timeSinceLastLoop -= timePerTick;
+	}
+
+	setTimeout(gameLoop, timePerTick - timeSinceLastLoop);
+}
+
+function gameTick() {
+
+}
+
+
+// ----------- RENDER
 
 function render() {
 	window.requestAnimationFrame(render, canvas);
@@ -111,15 +162,16 @@ function render() {
 
 
 	// texture
-	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, texture);
-
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, textureWidth, textureHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+	gl.bindTexture(gl.TEXTURE_2D, null);
 
+	gl.activeTexture(gl.TEXTURE0);
+	gl.bindTexture(gl.TEXTURE_2D, texture);
 
 	gl.uniform1i(locSampler, 0);
 

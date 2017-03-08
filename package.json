@@ -4,7 +4,8 @@
 	"description": "Pixels the game",
 	"main": "main.js",
 	"scripts": {
-		"start": "electron ."
+		"start": "electron .",
+		"postinstall": "electron-rebuild"
 	},
 	"repository": "https://github.com/JohannesBeranek/electron-pixels",
 	"keywords": [
@@ -14,6 +15,9 @@
 	"license": "ISC",
 	"devDependencies": {
 		"electron": ">=1.6.2",
-		"eslint" : "eslint/eslint"
+		"electron-rebuild": ">=1.5.7",
+		"eslint": "eslint/eslint",
+		"esprima": "jquery/esprima",
+		"node-opencl": "mikeseven/node-opencl"
 	}
 }
