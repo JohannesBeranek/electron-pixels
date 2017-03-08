@@ -6,7 +6,10 @@ const cl = require('node-opencl');
 let canvas;  // canvas dom element
 let gl;      // opengl context
 let clCtx;   // opencl context
-let program; // opengl shader program
+let glProgram; // opengl shader program
+let clProgram; // opencl program
+
+let clKernelMove;
 
 let locPosition;  // location of position variable in frag shader
 let locTexCoord;  // location of texture coords variable in frag shader
@@ -48,30 +51,30 @@ function init() {
 
 	// ------ SHADER SETUP
 	const vertexShader = gl.createShader(gl.VERTEX_SHADER);
-	gl.shaderSource(vertexShader, fs.readFileSync(__dirname + '/shader-vertex.glsl'));
+	gl.shaderSource(vertexShader, fs.readFileSync(__dirname + '/shader-vertex.glsl', 'utf-8'));
 	gl.compileShader(vertexShader);
 	console.log('vertexShaderLog', gl.getShaderInfoLog(vertexShader));
 
 	const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-	gl.shaderSource(fragmentShader, fs.readFileSync(__dirname + '/shader-fragment.glsl'));
+	gl.shaderSource(fragmentShader, fs.readFileSync(__dirname + '/shader-fragment.glsl', 'utf-8'));
 	gl.compileShader(fragmentShader);
 	console.log('fragmentShaderLog', gl.getShaderInfoLog(fragmentShader));
 
 
-	program = gl.createProgram();
-	gl.attachShader(program, vertexShader);
-	gl.attachShader(program, fragmentShader);
-	gl.linkProgram(program);
-	console.log('programLog', gl.getProgramInfoLog(program));
+	glProgram = gl.createProgram();
+	gl.attachShader(glProgram, vertexShader);
+	gl.attachShader(glProgram, fragmentShader);
+	gl.linkProgram(glProgram);
+	console.log('glProgramLog', gl.getProgramInfoLog(glProgram));
 
-	gl.useProgram(program);
+	gl.useProgram(glProgram);
 
 	// ---
-	locPosition = gl.getAttribLocation(program, 'a_position');
+	locPosition = gl.getAttribLocation(glProgram, 'a_position');
 	gl.enableVertexAttribArray(locPosition);
 
 	// provide texture coordinates for the rectangle.
-  	locTexCoord = gl.getAttribLocation(program, 'a_texCoord');
+  	locTexCoord = gl.getAttribLocation(glProgram, 'a_texCoord');
 	gl.enableVertexAttribArray(locTexCoord);
 
 
@@ -96,9 +99,10 @@ function init() {
 
 	texture = gl.createTexture();
 
-	locSampler = gl.getUniformLocation(program, 'u_sampler');
+	locSampler = gl.getUniformLocation(glProgram, 'u_sampler');
 
 	// --- Init opencl
+	// Best case we'd init a shared opengl/opencl context here, but node-opencl doesn't currently support that
 	const platforms = cl.getPlatformIDs();
 	for(let i = 0; i < platforms.length; i++)
 		console.info(`Platform ${i}: ${cl.getPlatformInfo(platforms[i], cl.PLATFORM_NAME)}`);
@@ -113,6 +117,23 @@ function init() {
 
 	clCtx = cl.createContext([cl.CONTEXT_PLATFORM, platform], devices);
 
+	// prepare opencl program
+	const clProgramSource = fs.readFileSync(__dirname + '/program.opencl', 'utf-8');
+	clProgram = cl.createProgramWithSource(clCtx, clProgramSource);
+	cl.buildProgram(clProgram);
+
+	// create kernels
+	// build kernel for first device
+	const buildDevice = cl.getContextInfo(clCtx, cl.CONTEXT_DEVICES)[0];
+
+ 	try {
+   	clKernelMove = cl.createKernel(clProgram, 'kmove');
+	} catch(err) {
+		console.error(cl.getProgramBuildInfo(clProgram, buildDevice, cl.PROGRAM_BUILD_LOG));
+		process.exit(-1);
+	}
+
+
 	startGameLoop();
 	render();
 }
@@ -121,8 +142,9 @@ function init() {
 // ----------- GAME LOOP
 
 let lastLoopTime;
-const timePerTick = 1000; // ms
+const timePerTick = 20; // ms
 let timeSinceLastLoop = 0;
+let tickCounter = 0;
 
 function startGameLoop() {
 	lastLoopTime = Date.now();
@@ -143,7 +165,7 @@ function gameLoop() {
 }
 
 function gameTick() {
-
+	tickCounter++;
 }
 
 
