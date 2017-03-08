@@ -46,12 +46,12 @@ function init() {
 
 	// ------ SHADER SETUP
 	const vertexShader = gl.createShader(gl.VERTEX_SHADER);
-	gl.shaderSource(vertexShader, fs.readFileSync(__dirname + '/shader-vertex.js'));
+	gl.shaderSource(vertexShader, fs.readFileSync(__dirname + '/shader-vertex.glsl'));
 	gl.compileShader(vertexShader);
 	console.log('vertexShaderLog', gl.getShaderInfoLog(vertexShader));
 
 	const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-	gl.shaderSource(fragmentShader, fs.readFileSync(__dirname + '/shader-fragment.js'));
+	gl.shaderSource(fragmentShader, fs.readFileSync(__dirname + '/shader-fragment.glsl'));
 	gl.compileShader(fragmentShader);
 	console.log('fragmentShaderLog', gl.getShaderInfoLog(fragmentShader));
 
@@ -85,6 +85,10 @@ function init() {
 		1.0,  1.0]), gl.STATIC_DRAW);
 
 	imageData = new Uint8Array(textureWidth * textureHeight * bytesPerPixel);
+
+	for (let i = 0; i < textureWidth * textureHeight; i++) {
+		imageData[i*bytesPerPixel + 0] = 255;
+	}
 
 	texture = gl.createTexture();
 
