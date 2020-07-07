@@ -14,7 +14,7 @@
 	"author": "GitHub",
 	"license": "ISC",
 	"devDependencies": {
-		"electron": "1.6.2",
+		"electron": "9.1.0",
 		"electron-rebuild": "1.5.7",
 		"eslint": "eslint/eslint",
 		"esprima": "jquery/esprima",
